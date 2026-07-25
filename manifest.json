@@ -1,23 +1,26 @@
 {
   "name": "mcpviews-gronk-speak",
-  "version": "0.1.4",
-  "download_url": "https://github.com/DeeJanuz/mcpviews-gronk-speak-plugin/releases/download/v0.1.4/mcpviews-gronk-speak.zip",
-  "description": "Optional MCPViews startup rule for terse nonpublic agent output style.",
+  "version": "0.2.0",
+  "download_url": "https://github.com/DeeJanuz/mcpviews-gronk-speak-plugin/releases/download/v0.2.0/mcpviews-gronk-speak.zip",
+  "description": "Optional MCPViews startup rules for GronkSpeak compression and clear plain prose.",
   "registry_index": {
-    "summary": "Optional GronkSpeak startup rule for compressed nonpublic agent output.",
+    "summary": "Optional independent startup rules for compressed GronkSpeak and clear Plain Prose.",
     "tags": [
       "rules",
       "setup",
       "style",
-      "compression"
+      "compression",
+      "prose",
+      "plain-language"
     ],
     "tool_groups": [],
     "renderer_names": []
   },
   "plugin_rules": [
-    "GronkSpeak is an optional single startup rule for terse nonpublic Codex output. During setup, ask whether the user wants to enable it and explain where it applies before saving the preference.",
+    "This plugin offers two independent optional startup rules during setup: GronkSpeak for terse nonpublic Codex output and Plain Prose for clear, direct wording across public and private prose.",
     "When enabled, GronkSpeak applies to ordinary assistant chat, progress/status updates, final answers, local summaries, findings, inventories, implementation notes, and internal reports unless a clearer or explicitly polished/public style is required.",
-    "GronkSpeak must never override user instructions, renderer payload requirements, safety, correctness, citations, warnings, commands, file paths, code, JSON, schema names, exact numbers, versions, dates, or test results."
+    "When enabled, Plain Prose governs clarity and word choice without enabling GronkSpeak compression. It remains active when GronkSpeak is off; when both apply, GronkSpeak may govern compression only within its existing scope.",
+    "Neither style rule may override user instructions, renderer payload requirements, audience or compliance needs, safety, correctness, citations, warnings, commands, file paths, code, JSON, schema names, exact numbers, versions, dates, or test results."
   ],
   "setup_questions": [
     {
@@ -46,6 +49,33 @@
           "persisted_rule": "GronkSpeak is disabled for this project. Use normal assistant style unless the user explicitly asks for terse output. If a previous GronkSpeak startup rule is installed, update or remove it so fresh sessions do not apply GronkSpeak by default."
         }
       ]
+    },
+    {
+      "id": "enable_plain_prose",
+      "question": "Enable Plain Prose for this project?",
+      "description": "Plain Prose is an optional writing baseline for all assistant-authored prose. It favors clear, direct, familiar wording across chat, messages, docs, PR text, reports, and public or private prose without enabling GronkSpeak compression.",
+      "guidance": "Explain that Plain Prose is independent of GronkSpeak and affects clarity and word choice rather than compression. When both are enabled, Plain Prose still governs clarity and word choice while GronkSpeak may use fragments within its existing nonpublic scope; Plain Prose applies alone everywhere else with the tone and structure the audience needs. Show the before-and-after example and emphasize that code, identifiers, quoted text, errors, and precise technical terms stay exact.",
+      "default_value": "enabled",
+      "recommended_value": "enabled",
+      "persist_as_rule_name": "PlainProse",
+      "example_outputs": {
+        "enabled": "Before: It is recommended that the existing validation mechanism be utilized prior to deployment.\nPlain Prose: Use the existing validation before deployment.",
+        "off": "Normal assistant prose rules stay active. Plain Prose is not installed for fresh sessions."
+      },
+      "options": [
+        {
+          "value": "enabled",
+          "label": "Enable",
+          "description": "Use clear, direct, familiar wording across assistant-authored prose while preserving exact technical content and the tone the audience needs.",
+          "persisted_rule": "Plain Prose is active for this project from the first assistant-visible response of every session.\n\nPurpose: make prose clear, direct, and easy to read without losing precision.\n\nPersistence:\n- Stay active across turns in this project.\n- Stop only when the user asks for a different style or removal of this rule.\n\nScope:\n- Apply to assistant-authored prose, including chat, messages, docs, PR text, reports, product copy, and other public or private prose.\n- Plain Prose governs clarity and word choice. It does not enable GronkSpeak compression.\n- Plain Prose remains active when GronkSpeak is off.\n\nInteraction with GronkSpeak:\n- When both rules apply, Plain Prose governs clarity and word choice while GronkSpeak may govern compression and fragments within its existing scope.\n- Do not expand GronkSpeak into polished or public deliverables because Plain Prose is enabled.\n- Outside GronkSpeak's scope, use the tone and structure the audience needs while following Plain Prose.\n\nRules:\n- Avoid clich\u00e9s, stock metaphors, and canned phrases.\n- Prefer short, familiar words when they are equally exact.\n- Cut words that add no meaning, needed tone, or context.\n- Prefer active voice when the actor matters or is known. Passive voice is fine when the actor is unknown, irrelevant, or adds noise.\n- Replace jargon and insider language with everyday English only when precision survives.\n- Break these style rules when following them would harm clarity, accuracy, tone, respect, compliance, or audience needs.\n\nProtected content:\n- Never rewrite code, commands, file paths, identifiers, API or schema names, quoted text, error text, citations, exact values, or established technical terms to satisfy these style rules.\n- Preserve risks, uncertainty, warnings, and required context.\n\nPrecedence:\n- User instructions, safety, correctness, audience and compliance needs, renderer payload requirements, and exact technical output outrank Plain Prose."
+        },
+        {
+          "value": "off",
+          "label": "Off",
+          "description": "Do not install Plain Prose for fresh project sessions. Use normal assistant prose rules unless the user explicitly asks for Plain Prose.",
+          "persisted_rule": "Plain Prose is disabled for this project. Use normal assistant prose rules unless the user explicitly asks for Plain Prose. If a previous PlainProse startup rule is installed, update or remove it so fresh sessions do not apply Plain Prose by default."
+        }
+      ]
     }
   ],
   "startup_rules": [
@@ -57,6 +87,19 @@
       "source": {
         "type": "setup_question",
         "question_id": "enable_gronk_speak",
+        "skip_install_values": [
+          "off"
+        ]
+      }
+    },
+    {
+      "id": "PlainProse",
+      "version": "1",
+      "title": "Plain Prose",
+      "description": "Independent agent-native startup rule for clear, direct prose across public and private outputs. Setup asks whether to enable it; enabled installs this project rule.",
+      "source": {
+        "type": "setup_question",
+        "question_id": "enable_plain_prose",
         "skip_install_values": [
           "off"
         ]
