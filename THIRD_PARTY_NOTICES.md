@@ -1,8 +1,8 @@
 # Third-party notices
 
-The GronkSpeak and Plain Prose writing rules include an original adaptation of ideas from pstack's Unslop skill.
+The GronkSpeak and Plain Prose writing rules reproduce and adapt portions of pstack's Unslop skill. The Unslop process, Adding soul guidance, and 31-pattern catalog retain upstream wording where compatible. Local compatibility boundaries preserve plugin scope, exact technical text, required syntax, and audience constraints.
 
-Pinned source: https://github.com/cursor/plugins/tree/60c641e4fad674784b30abcf9f8915dea39df38d/pstack
+Pinned source: https://github.com/cursor/plugins/blob/60c641e4fad674784b30abcf9f8915dea39df38d/pstack/skills/unslop/SKILL.md
 
 MIT License
 

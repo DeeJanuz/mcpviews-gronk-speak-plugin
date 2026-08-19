@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -13,8 +14,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = ROOT / "manifest.json"
 EXPECTED_NAME = "mcpviews-gronk-speak"
-EXPECTED_VERSION = "0.3.0"
-EXPECTED_RULE_VERSIONS = {"GronkSpeak": "5", "PlainProse": "2"}
+EXPECTED_VERSION = "0.3.1"
+EXPECTED_RULE_VERSIONS = {"GronkSpeak": "6", "PlainProse": "3"}
 EXPECTED_QUESTIONS = {
     "enable_gronk_speak": "GronkSpeak",
     "enable_plain_prose": "PlainProse",
@@ -25,6 +26,40 @@ EXPECTED_ARCHIVE_FILES = {
     "RELEASE_NOTES.md",
     "THIRD_PARTY_NOTICES.md",
 }
+EXPECTED_UNSLOP_PATTERNS = (
+    "Puffery.",
+    "Name-dropping.",
+    "Superficial -ing phrases.",
+    "Promotional language.",
+    "Vague attributions.",
+    "Formulaic challenges.",
+    "AI vocabulary.",
+    'Fancy ways to say "is".',
+    '"Not just X, but Y."',
+    "Rule of three.",
+    "Synonym cycling.",
+    "False ranges.",
+    "Em dash overuse.",
+    "Colon overuse.",
+    "Boldface overuse.",
+    "Inline-header lists.",
+    "Title case headings.",
+    "Decorative emojis.",
+    "Curly quotes.",
+    "Chatbot phrases.",
+    "Cutoff disclaimers.",
+    "Sycophantic tone.",
+    "Filler phrases.",
+    "Excessive hedging.",
+    "Generic conclusions.",
+    "Abstract metaphor nouns.",
+    "Say what it does, not how it feels.",
+    "Shorten or split dense sentences.",
+    "Active voice.",
+    "Cut adverbs, or use a stronger verb.",
+    "Prefer the plain word.",
+)
+EXPECTED_UNSLOP_BODY_SHA256 = "b45050c16bdecc44b24a1a9179c341ff09a88e1106ecdf18f1dc17f4fb63fcf1"
 
 
 def require(condition: bool, message: str, errors: list[str]) -> None:
@@ -156,16 +191,31 @@ def validate_manifest(manifest: dict[str, object], errors: list[str]) -> None:
             continue
         for heading in ("Scope:", "Writing baseline:", "Protected content:", "Self-audit:", "Precedence:"):
             require(heading in text, f"{rule_id} is missing {heading}", errors)
-        for behavior in (
-            "puffery",
-            "chatbot phrases",
-            "named source",
-            "forced groups of three",
-            "active voice",
-            "em dashes",
-            "machine-generated" if rule_id == "PlainProse" else "AI-flavored vocabulary",
+        for source_line in (
+            "Edit text to remove AI patterns and add human voice.",
+            "1. Scan for the patterns below.",
+            "2. Rewrite. Preserve meaning, match intended tone.",
+            "3. Add soul (see next section).",
+            '4. Self-audit: "What makes this obviously AI generated?" Fix remaining tells.',
+            "Removing patterns is half the job. Sterile, voiceless writing is just as obvious.",
         ):
-            require(behavior in text, f"{rule_id} lacks independent Unslop behavior: {behavior}", errors)
+            require(source_line in text, f"{rule_id} is missing exact Unslop language: {source_line}", errors)
+        for number, pattern in enumerate(EXPECTED_UNSLOP_PATTERNS, start=1):
+            anchor = f"{number}. **{pattern}**"
+            require(anchor in text, f"{rule_id} is missing Unslop pattern {anchor}", errors)
+        require("## Compatibility boundaries" in text, f"{rule_id} lacks compatibility boundaries", errors)
+        unslop_start = text.find("Edit text to remove AI patterns and add human voice.")
+        compatibility_start = text.find("\n\n## Compatibility boundaries", unslop_start)
+        require(unslop_start != -1, f"{rule_id} lacks the Unslop body", errors)
+        require(compatibility_start != -1, f"{rule_id} lacks the Unslop body boundary", errors)
+        if unslop_start != -1 and compatibility_start != -1:
+            unslop_body = text[unslop_start:compatibility_start]
+            digest = hashlib.sha256(unslop_body.encode("utf-8")).hexdigest()
+            require(
+                digest == EXPECTED_UNSLOP_BODY_SHA256,
+                f"{rule_id} Unslop body differs from the pinned source",
+                errors,
+            )
         for protected in (
             "code",
             "commands",

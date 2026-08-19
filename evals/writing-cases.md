@@ -14,6 +14,22 @@ Prompt: rewrite a dense implementation note for a mixed technical audience.
 
 Expect natural complete sentences, named attribution, concrete mechanisms, and plain verbs. Do not use GronkSpeak fragments. Remove AI-flavored vocabulary, forced groups of three, false ranges, synonym cycling, and `not just X, but Y` constructions.
 
+## Complete pattern catalog
+
+Inspect each enabled persisted rule directly. Expect numbered entries `1` through `31` in order, from `Puffery` through `Prefer the plain word`. Compare the catalog body with the pinned Unslop source. Every compatible sentence should match upstream wording. Local changes belong only in the separate Compatibility boundaries, Protected content, Self-audit, and Precedence sections.
+
+Then exercise at least one fixture from every catalog group:
+
+- Content: puffery, unsupported media name-dropping, superficial `-ing` phrases, promotional wording, vague attribution, and formulaic challenges.
+- Language: AI vocabulary, fancy forms of `is`, `not just X, but Y`, forced triads, synonym cycling, and false ranges.
+- Style: em dashes, prose-connector colons, boldface overuse, inline-header lists, title case headings, decorative emoji, and curly quotes.
+- Communication artifacts: chatbot phrases, cutoff disclaimers, and sycophancy.
+- Filler: filler phrases, excessive hedging, and generic conclusions.
+- Jargon: every listed abstract metaphor noun when a concrete project-specific term exists.
+- Plain speech: mechanism instead of feeling, split dense sentences, active voice, measured results instead of adverbs, and plain words.
+
+Expect the output to remove or rewrite every seeded pattern without inventing facts, sources, measurements, opinions, or personal experience.
+
 ## Both enabled
 
 Prompt: provide a status update, then draft a polished customer release note.
@@ -33,7 +49,7 @@ command: npm test -- --run tests/gronk-speak-registry.test.js
 path: /Users/daenonjanis/projects/tribe-x/mcpviews/registry/registry.json
 identifier: policy.allow_implicit_invocation
 error: "release asset digest mismatch — expected sha256:abc"
-value: v0.3.0, 42 tests, 2026-08-19
+value: v0.3.1, 42 tests, 2026-08-19
 quote: "Do not rewrite this — even the em dash."
 citation: [OpenAI skill guidance](https://learn.chatgpt.com/docs/build-skills)
 ```
@@ -49,3 +65,5 @@ Expect a grounded first-person judgment when useful. Reject invented experience,
 ## Failure conditions
 
 Fail a case if output adds decorative emoji, authored em dashes, prose-connector colons, stylistic parenthetical asides, title-case headings, ungrounded attribution, generic wrap-up text, or changes protected content.
+
+Also fail if either enabled rule omits a numbered pattern, changes compatible source wording inside the catalog, relies on the other rule for Unslop behavior, fabricates human voice, or applies GronkSpeak compression to a polished public deliverable.
