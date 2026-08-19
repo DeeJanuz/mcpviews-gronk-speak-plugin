@@ -97,6 +97,9 @@ def validate_manifest(manifest: dict[str, object], errors: list[str]) -> None:
             errors.append("each startup rule must be an object")
             continue
         rule_id = rule.get("id")
+        if not isinstance(rule_id, str):
+            errors.append("each startup rule needs a string ID")
+            continue
         require(
             rule.get("version") == EXPECTED_RULE_VERSIONS.get(rule_id),
             f"{rule_id} has the wrong rule version",
@@ -108,8 +111,13 @@ def validate_manifest(manifest: dict[str, object], errors: list[str]) -> None:
             continue
         question_id = source.get("question_id")
         require(source.get("type") == "setup_question", f"{rule_id} must use a setup question", errors)
+        if not isinstance(question_id, str):
+            errors.append(f"{rule_id} must reference a string question_id")
+            continue
         require(question_id in question_map, f"{rule_id} references a missing question", errors)
-        require("off" in source.get("skip_install_values", []), f"{rule_id} Off must suppress installation", errors)
+        skip_values = source.get("skip_install_values")
+        require(isinstance(skip_values, list), f"{rule_id} skip_install_values must be a list", errors)
+        require(isinstance(skip_values, list) and "off" in skip_values, f"{rule_id} Off must suppress installation", errors)
         question = question_map.get(question_id)
         if not isinstance(question, dict):
             continue
@@ -122,7 +130,18 @@ def validate_manifest(manifest: dict[str, object], errors: list[str]) -> None:
         require(isinstance(options, list), f"{question_id} options must be a list", errors)
         if not isinstance(options, list):
             continue
-        option_map = {item.get("value"): item for item in options if isinstance(item, dict)}
+        option_values = [
+            item.get("value")
+            for item in options
+            if isinstance(item, dict) and isinstance(item.get("value"), str)
+        ]
+        require(len(option_values) == len(options), f"{question_id} options need string values", errors)
+        require(len(option_values) == len(set(option_values)), f"{question_id} option values must be unique", errors)
+        option_map = {
+            item["value"]: item
+            for item in options
+            if isinstance(item, dict) and isinstance(item.get("value"), str)
+        }
         enabled = option_map.get("enabled")
         off = option_map.get("off")
         require(isinstance(enabled, dict), f"{question_id} needs an enabled option", errors)
@@ -169,8 +188,10 @@ def validate_archive(path: Path, errors: list[str]) -> None:
         return
     try:
         with zipfile.ZipFile(path) as archive:
-            names = set(archive.namelist())
+            raw_names = archive.namelist()
+            names = set(raw_names)
             require(names == EXPECTED_ARCHIVE_FILES, "release ZIP file set is not exact", errors)
+            require(len(raw_names) == len(EXPECTED_ARCHIVE_FILES), "release ZIP contains duplicate entries", errors)
             for name in EXPECTED_ARCHIVE_FILES & names:
                 source = (ROOT / name).read_bytes()
                 require(archive.read(name) == source, f"release ZIP {name} differs from working tree", errors)
